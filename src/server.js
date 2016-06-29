@@ -6,20 +6,17 @@ import config from '../config'
 
 
 const server = http.createServer((req, res) => {
-    let headers = req.headers
     let requestUrl = req.url
     let method = req.method
+    res.setHeader('Content-Type', 'application/json')
 
     function buildResponse(error, data){
         res.statusCode = 200
-        res.setHeader('Content-Type', 'application/text')
         let responseBody = {
-            headers: headers,
-            method: method,
-            url: requestUrl,
-            data: data
+            "response_type": "in_channel",
+            "text": "\`\`\`" + data + "\`\`\`"
         }
-        res.write("\`\`\`" + data + "\`\`\`")
+        res.write(JSON.stringify(responseBody))
         res.end()
     }
 
@@ -59,8 +56,13 @@ const server = http.createServer((req, res) => {
                 }
             })
     }
-    else if (method=='GET') {
+    else if (method=='GET' && requestURL == '/') {
         res.write(JSON.stringify({"Message": "Hi, this is a bot to generate ASCII text from text command for Slack."}))
+        res.end()
+    }
+    else{
+        res.statusCode = 404
+        res.write(JSON.stringify({"Message": "Resource not found."}))
         res.end()
     }
 })
